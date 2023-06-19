@@ -35,7 +35,7 @@ static const int move_table_king[8][2] = {
  * @return int 
  */
 enum piece_score {
-  PAWN = 4, //2
+  PAWN = 3, //2
   ROOK = 12, //6
   KNIGHT = 14, //7
   BISHOP = 16, //8
