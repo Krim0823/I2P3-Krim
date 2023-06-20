@@ -22,7 +22,7 @@ typedef struct mcts_node{
 
 void mcts_tree_update(MCTSNode* root);
 MCTSNode* build_mcts_node(Move move, State* state, int depth, MCTSNode* parent_node);
-float get_mcts_best_score(MCTSNode* root);
+int get_mcts_best_score(MCTSNode* root);
 void delete_mcts_tree(MCTSNode* root);
 bool mcts_simulation(State* state, int cur_player); // rollout
 float get_UCB(MCTSNode* node);

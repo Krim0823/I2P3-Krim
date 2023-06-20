@@ -17,6 +17,25 @@
 Move MCTS::get_move(State *state, int simulate){
   if(!state->legal_actions.size())
     state->get_legal_actions();
+  // prevent the case that king is going to be eaten
+  int best_evaluate = -10000;
+  int safe_index = 0;
+  bool king_danger = false;
+  int size = state->legal_actions.size();
+  for(int i = 0; i < size; i++) {
+    State* new_state = state->next_state(state->legal_actions.at(i));
+    int evaluate = new_state->evaluate();
+    if(evaluate > 8000) return state->legal_actions.at(i);
+    if(evaluate < -8000) king_danger = true;
+    if(evaluate > best_evaluate) {
+      best_evaluate = evaluate;
+      safe_index = i;
+    }
+    if(king_danger && best_evaluate > -8000) return state->legal_actions.at(safe_index);
+  }
+  // end prevent
+
+
   MCTSNode* root = build_mcts_node(state->legal_actions.at(0), state, 0, NULL);
   // expand for root
   root->child_num = root->state->legal_actions.size();
@@ -25,19 +44,11 @@ Move MCTS::get_move(State *state, int simulate){
     root->child[i] = build_mcts_node(root->state->legal_actions.at(i), new_state, 1, root);
   } 
   // end expand 
-  for(int i = 0; i <= simulate; i++) {
+  for(int i = 0; i < simulate; i++) {
     mcts_tree_update(root);
+    std::cout << "simulate:" << i+1 << std::endl;
   }
-  float goal_score = get_mcts_best_score(root);
-  Move goal_move;
-  for(int i = 0; i < root->child_num; i++) {
-    if(root->child[i]->UCB == goal_score) {
-      goal_move = root->child[i]->pre_move;
-      std::cout << "select node:" << i << std::endl;
-      std::cout << "win/race: " << root->child[i]->win << " / " << root->child[i]->race << std::endl;
-      break;
-    }
-  }
+  Move goal_move = root->child[get_mcts_best_score(root)]->pre_move;
   delete_mcts_tree(root);
   return goal_move;
 }
@@ -73,6 +84,7 @@ void mcts_tree_update(MCTSNode* root) {
       }
     }
     target_node = next_target_node;
+    //std::cout << "select: " << target_node->cur_depth << std::endl;
   }
   // end select
 
@@ -85,8 +97,9 @@ void mcts_tree_update(MCTSNode* root) {
       State* new_state = target_node->state->next_state(target_node->state->legal_actions.at(i));
       target_node->child[i] = build_mcts_node(target_node->state->legal_actions.at(i), new_state, target_node->cur_depth + 1, target_node);
     }
-    if(!target_node->state->legal_actions.size()) return;
-    target_node = target_node->child[0];
+    if(target_node->state->legal_actions.size()) {
+      target_node = target_node->child[0];
+    }
   }
   // end expand
 
@@ -98,7 +111,9 @@ void mcts_tree_update(MCTSNode* root) {
 
   // back propagate
   while(target_node->parent != NULL) {
+    //std::cout << "propogate: " << target_node->cur_depth << std::endl;
     target_node = target_node->parent;
+    //std::cout << "race: " << target_node->race << std::endl;
     target_node->race++;
     if(player_win) target_node->win++;
   }
@@ -110,35 +125,44 @@ void mcts_tree_update(MCTSNode* root) {
 float get_UCB(MCTSNode* node) {
   if(node->race == 0) return FLT_MAX;
   int _win;
-  if(node->cur_depth % 1) _win = node->win;
+  int factor = 2;//sqrt(2), 2, 3
+  if((node->cur_depth % 1)) _win = node->win;
   else _win = node->race - node->win;
-  return ((float)(_win)/(float)(node->race)) + sqrt(2) * sqrt(log(node->parent->race) / (float)(node->race));
+  return ((float)(_win)/(float)(node->race)) + factor * sqrt(log(node->parent->race) / (float)(node->race));
 }
 
 
-float get_mcts_best_score(MCTSNode* root) {
-    float best_score = FLT_MIN;
-    for(int i = 0; i < root->child_num; i++) 
-      if(root->child[i]->UCB > best_score) best_score = root->child[i]->UCB;
-    return best_score;
+int get_mcts_best_score(MCTSNode* root) {
+    float best_score = 0;
+    float cur_score = 0;
+    int index = 0;
+    for(int i = 0; i < root->child_num; i++) {
+      cur_score = (float)(root->child[i]->win) / (float)(root->child[i]->race); 
+      std::cout << "cur score = " << cur_score << std::endl;
+      if(cur_score > best_score) {
+        best_score = cur_score;
+        index = i;
+      }
+    }
+    std::cout << "best score = " << (float)(root->child[index]->win) / (float)(root->child[index]->race) << std::endl;
+    return index;
 }
 
 
 int triplerand() { return (int)((rand() >> 3) ^ (rand() << 7) ^ (rand() >> 17)); }
 bool mcts_simulation(State* state, int cur_player) {
-  //return true; /////////////////////////////////
   bool player_win = false;
   State* cur_state = state;
   int time = 1;
+  int total_time = 30;
   int rand_num;
-  while(time <= 50) {
+  while(time <= total_time) {
     if(!cur_state->legal_actions.size())
       cur_state->get_legal_actions();
     if(!cur_state->legal_actions.size()) break; // if no further action
-    //std::cout << "win: " << cur_state->game_state << " legel action size: " << cur_state->legal_actions.size() << std::endl;
     if(cur_state->game_state == WIN) {
-      if(cur_state->player == cur_player) player_win = false;
-      else player_win = true;
+      if(cur_state->player == cur_player) player_win = true;
+      else player_win = false;
       break;
     }
     // get random num
@@ -148,6 +172,10 @@ bool mcts_simulation(State* state, int cur_player) {
     cur_state = new_state;
     time++;
   }
+  // draw : use get_piece_score
+  /*if(time == total_time + 1) {
+    if(cur_state->get_piece_score(cur_player) > 40) player_win = true;
+  }*/
   return player_win;
 }
 

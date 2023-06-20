@@ -431,7 +431,7 @@ int main(int argc, char** argv) {
     Move action(Point(-1, -1), Point(-1, -1));
     int total = 0;
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    system("cls");
+    //system("cls");
 #else
     //system("clear");
 #endif
