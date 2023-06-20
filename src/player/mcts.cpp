@@ -40,9 +40,11 @@ void read_board(std::ifstream& fin) {
  */
 void write_valid_spot(std::ofstream& fout) {
   // Keep updating the output until getting killed.
+  int step[3] = {10000, 15000, 20000};
   while(true) {
     // Choose a random spot.
-    auto move = MCTS::get_move(root);
+    auto move = MCTS::get_move(root, 1000);
+    //std::cout << "finish step:" << depth << std::endl; 
     fout << move.first.first << " " << move.first.second << " "\
          << move.second.first << " " << move.second.second << std::endl;
     
