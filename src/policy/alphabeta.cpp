@@ -106,6 +106,8 @@ AlphaBetaNode* build_alpha_beta_tree(Move move, State* cur_state, int cur_depth,
 
 int get_alpha_beta_best_score(AlphaBetaNode* root) {
     if(root->child_num == 0) {
+      /*std::cout << root->heuristic << " ";
+        std::cout << root->score << "depth:" << root->depth << "child_num:" << root->child_num << std::endl;*/
         return root->score;
     }
 
@@ -136,6 +138,5 @@ void delete_alpha_beta_tree(AlphaBetaNode* root) {
     if(root->child_num) {
         for(int i = 0; i < root->child_num; i++) delete_alpha_beta_tree(root->child[i]);
     }
-    delete root->state;
     for(int i = 0; i < root->child_num; i++) delete root->child[i];
 }

@@ -42,7 +42,7 @@ void write_valid_spot(std::ofstream& fout) {
   // Keep updating the output until getting killed.
   while(true) {
     // Choose a random spot.
-    auto move = MCTS::get_move(root, 3);
+    auto move = MCTS::get_move(root);
     fout << move.first.first << " " << move.first.second << " "\
          << move.second.first << " " << move.second.second << std::endl;
     

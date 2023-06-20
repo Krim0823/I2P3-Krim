@@ -6,6 +6,7 @@
 #include "../state/state.hpp"
 #include "./mcts.hpp"
 
+
 /**
  * @brief Randomly get a legal action
  * 
@@ -13,7 +14,7 @@
  * @param depth You may need this for other policy
  * @return Move 
  */
-Move MCTS::get_move(State *state, int depth){
+Move MCTS::get_move(State *state){
   if(!state->legal_actions.size())
     state->get_legal_actions();
   MCTSNode* root = build_mcts_node(state->legal_actions.at(0), state, 0, NULL);

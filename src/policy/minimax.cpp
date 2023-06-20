@@ -111,6 +111,5 @@ void delete_tree(MiniMaxNode* root) {
     if(root->child_num) {
         for(int i = 0; i < root->child_num; i++) delete_tree(root->child[i]);
     }
-    delete root->state;
     for(int i = 0; i < root->child_num; i++) delete root->child[i];
 }

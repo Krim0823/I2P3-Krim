@@ -433,7 +433,7 @@ int main(int argc, char** argv) {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     system("cls");
 #else
-    system("clear");
+    //system("clear");
 #endif
     while (true) {
       int x, y, n, m;

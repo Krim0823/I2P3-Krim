@@ -5,7 +5,7 @@
 
 class MCTS{
 public:
-  static Move get_move(State *state, int depth);
+  static Move get_move(State *state);
 };
 
 typedef struct mcts_node{
