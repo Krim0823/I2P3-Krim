@@ -40,7 +40,7 @@ void read_board(std::ifstream& fin) {
  */
 void write_valid_spot(std::ofstream& fout) {
   // Keep updating the output until getting killed.
-  int step[2] = {1000, 80000}; // possible: 10,80000
+  int step[2] = {10, 80000}; // possible: 10,80000
   int depth = 0;
   while(true) {
     // Choose a random spot.
